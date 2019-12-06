@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>EmilyTaylor_Lab3</title>
+    <script>
+		// JavaScript for LCBODemo
+		function get(url) {
+				//return the promise to get(url) so the getLCBODataAsynch continues working correctly
+		return new Promise (
+			function(resolve, reject) {
+				var req = new XMLHttpRequest();
+				req.open ('GET', url);
+					
+				req.onload = function () {
+					var lcboProducts = [];
+					var data = JSON.parse(req.responseText);	
+					if (!data.pager.is_final_page && data.pager.next_page < 6) {
+						lcboProducts.push(data.result);
+						url = "http://lcboapi.com" + data.pager.next_page_path;
+						document.getElementById("countDiv").innerHTML = data.pager.next_page;
+									
+						for (var i = 0; i < data.result.length; i++) {
+							document.getElementById("namesDiv").innerHTML += data.result[i].name + ", ";
+							}
+							get(url);
+							}
+							else {
+								var allJSON = JSON.stringify(lcboProducts);
+							}
+							// put the existing conditions for the LCBODemo code in the onload function, not changing anything except variable names.
+							// continue with finishing the promise conditions
+				if (req.status == 200) { 
+					resolve(req.response);
+				}
+				else {
+					reject(Error(req.statusText));
+				}
+			};
+			req.onerror = function() {
+				reject(Error("Network Error"));
+			};
+			req.setRequestHeader("Authorization", "Token MDo5OWQ1OTE5ZS0wYWM2LTExZTgtOWQzNy05NzBhMmM5NGE3MGE6MDE5VlJxVkdtU2FHTkdaV0tkbTVSVHJha0ZaSmlva1AyOTlt");
+			req.send();
+		});
+	}
+		function getLCBODataAsynch() {
+			var lcboURL = "http://lcboapi.com/products?per_page=100?where=is_seasonal";
+			get(lcboURL);
+		}
+	</script>
+</head>
+<body>
+	<input type="button" id="btnAsynch"  value="Get LCBO Product Data Asynchronously" onclick="getLCBODataAsynch();"/>
+	<br /><br />
+	<div id="countDiv"></div>
+	<div id="namesDiv"></div>
+</body>
+</html>
